@@ -32,6 +32,7 @@ COIN_MAPPING = {
     'ASTR': 'astar',
     'XYM': 'symbol',
     'LOOT': 'lootcoin',
+    'JPYC': 'jpyc',
 }
 
 
