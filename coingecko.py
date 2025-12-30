@@ -26,11 +26,12 @@ COIN_MAPPING = {
     'LINK': 'chainlink',
     'UNI': 'uniswap',
     'ATOM': 'cosmos',
-    'ETC': 'ethereum-classic',
-    'LTC': 'litecoin',
-    'BCH': 'bitcoin-cash',
-    'XLM': 'stellar',
-    'ALGO': 'algorand',
+    'XMR': 'monero',
+    'HYPE': 'hyperliquid',
+    'RISE': 'sunrise',
+    'ASTR': 'astar',
+    'XYM': 'symbol',
+    'LOOT': 'lootcoin',
 }
 
 
