@@ -60,3 +60,24 @@ python coingecko.py 100JPY USDC
 50USDC
 ```
 
+## ライブラリのインストール
+
+```
+┌──(venv)(stardust✨stardust)-[~/coingecko]
+└─$ pip install -r requirements.txt
+```
+
+## Usage
+
+```
+┌──(venv)(stardust✨stardust)-[~/coingecko]
+└─$ python coingecko.py 
+使用方法:
+  価格表示: python coingecko.py <暗号通貨名>
+  通貨換算: python coingecko.py <金額><通貨> <暗号通貨名>
+
+例:
+  python coingecko.py ETH
+  python coingecko.py 100JPY ETH
+  python coingecko.py 100JPY USDC
+```
