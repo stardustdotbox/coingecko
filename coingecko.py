@@ -144,19 +144,31 @@ def get_market_data(coin_id: str) -> Optional[dict]:
 
 
 def format_price(price: float, currency: str) -> str:
-    """価格を適切なフォーマットで表示（正確な数値、切り捨てなし）"""
-    # 小数点以下を最大18桁まで表示し、不要な末尾の0を削除
-    if price == int(price):
-        return f"{int(price):,}{currency}"
-    else:
-        # 最大18桁の精度で表示し、末尾の0を削除
-        price_str = f"{price:.18f}".rstrip('0').rstrip('.')
-        # カンマ区切りを追加（整数部分のみ）
-        if '.' in price_str:
-            integer_part, decimal_part = price_str.split('.')
-            return f"{int(integer_part):,}.{decimal_part}{currency}"
+    """価格を適切なフォーマットで表示"""
+    if currency == 'USD':
+        # USD価格は小数点以下6桁まで表示
+        if price < 0.01:
+            return f"{price:.8f}".rstrip('0').rstrip('.') + currency
+        elif price < 1:
+            return f"{price:.6f}".rstrip('0').rstrip('.') + currency
+        elif price < 1000:
+            return f"{price:.4f}".rstrip('0').rstrip('.') + currency
         else:
-            return f"{int(price_str):,}{currency}"
+            return f"{price:.2f}".rstrip('0').rstrip('.') + currency
+    elif currency == 'JPY':
+        # JPY価格は小数点以下2桁まで表示
+        if price < 1:
+            return f"{price:.4f}".rstrip('0').rstrip('.') + currency
+        else:
+            return f"{price:.2f}".rstrip('0').rstrip('.') + currency
+    else:
+        # その他の通貨は小数点以下6桁まで
+        if price < 0.01:
+            return f"{price:.8f}".rstrip('0').rstrip('.') + currency
+        elif price < 1:
+            return f"{price:.6f}".rstrip('0').rstrip('.') + currency
+        else:
+            return f"{price:.2f}".rstrip('0').rstrip('.') + currency
 
 
 def format_crypto_amount(amount: float, coin_name: str) -> str:
@@ -186,42 +198,33 @@ def parse_amount_and_currency(arg: str) -> Tuple[Optional[float], Optional[str]]
 
 
 def format_large_number(value: Optional[float]) -> str:
-    """大きな数値を正確にフォーマット（切り捨てなし）"""
+    """大きな数値を適切なフォーマットで表示"""
     if value is None:
         return "N/A"
     
-    # 整数の場合は整数として表示
-    if value == int(value):
-        return f"{int(value):,}"
-    
-    # 小数点以下を適切に表示（不要な末尾の0は削除）
-    value_str = f"{value:.18f}".rstrip('0').rstrip('.')
-    # カンマ区切りを追加
-    parts = value_str.split('.')
-    if len(parts) == 2:
-        integer_part = f"{int(parts[0]):,}" if parts[0] else "0"
-        return f"{integer_part}.{parts[1]}"
+    # 時価総額や取引量などの大きな数値は小数点以下2桁まで表示
+    if value >= 1000000:
+        # 100万以上の場合は小数点以下2桁
+        return f"{value:,.2f}".rstrip('0').rstrip('.')
+    elif value >= 1000:
+        # 1000以上の場合は小数点以下2桁
+        return f"{value:,.2f}".rstrip('0').rstrip('.')
     else:
-        return f"{int(value):,}"
+        # 1000未満の場合は小数点以下4桁
+        return f"{value:,.4f}".rstrip('0').rstrip('.')
 
 
 def format_supply(value: Optional[float]) -> str:
-    """供給量を正確にフォーマット（切り捨てなし）"""
+    """供給量を適切なフォーマットで表示"""
     if value is None:
         return "N/A"
     
-    # 整数の場合は整数として表示
+    # 供給量は整数として表示（小数点以下は不要）
     if value == int(value):
         return f"{int(value):,}"
-    
-    # 小数点以下を適切に表示（不要な末尾の0は削除）
-    value_str = f"{value:.18f}".rstrip('0').rstrip('.')
-    # カンマ区切りを追加
-    if '.' in value_str:
-        integer_part, decimal_part = value_str.split('.')
-        return f"{int(integer_part):,}.{decimal_part}"
     else:
-        return f"{int(value_str):,}"
+        # 小数点がある場合は小数点以下2桁まで
+        return f"{value:,.2f}".rstrip('0').rstrip('.')
 
 
 def show_price(coin_name: str):
