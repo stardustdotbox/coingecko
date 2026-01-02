@@ -144,15 +144,19 @@ def get_market_data(coin_id: str) -> Optional[dict]:
 
 
 def format_price(price: float, currency: str) -> str:
-    """価格を適切なフォーマットで表示"""
-    if currency == 'USDC':
-        # USDCは小数点以下2桁まで
-        return f"{price:,.2f}USDC"
-    elif currency == 'JPY':
-        # JPYは小数点以下2桁まで（カンマ区切り）
-        return f"{price:,.2f}JPY"
+    """価格を適切なフォーマットで表示（正確な数値、切り捨てなし）"""
+    # 小数点以下を最大18桁まで表示し、不要な末尾の0を削除
+    if price == int(price):
+        return f"{int(price):,}{currency}"
     else:
-        return f"{price:,.2f}{currency}"
+        # 最大18桁の精度で表示し、末尾の0を削除
+        price_str = f"{price:.18f}".rstrip('0').rstrip('.')
+        # カンマ区切りを追加（整数部分のみ）
+        if '.' in price_str:
+            integer_part, decimal_part = price_str.split('.')
+            return f"{int(integer_part):,}.{decimal_part}{currency}"
+        else:
+            return f"{int(price_str):,}{currency}"
 
 
 def format_crypto_amount(amount: float, coin_name: str) -> str:
@@ -182,35 +186,42 @@ def parse_amount_and_currency(arg: str) -> Tuple[Optional[float], Optional[str]]
 
 
 def format_large_number(value: Optional[float]) -> str:
-    """大きな数値を読みやすい形式でフォーマット"""
+    """大きな数値を正確にフォーマット（切り捨てなし）"""
     if value is None:
         return "N/A"
     
-    if value >= 1_000_000_000_000:
-        return f"{value / 1_000_000_000_000:.2f}T"
-    elif value >= 1_000_000_000:
-        return f"{value / 1_000_000_000:.2f}B"
-    elif value >= 1_000_000:
-        return f"{value / 1_000_000:.2f}M"
-    elif value >= 1_000:
-        return f"{value / 1_000:.2f}K"
+    # 整数の場合は整数として表示
+    if value == int(value):
+        return f"{int(value):,}"
+    
+    # 小数点以下を適切に表示（不要な末尾の0は削除）
+    value_str = f"{value:.18f}".rstrip('0').rstrip('.')
+    # カンマ区切りを追加
+    parts = value_str.split('.')
+    if len(parts) == 2:
+        integer_part = f"{int(parts[0]):,}" if parts[0] else "0"
+        return f"{integer_part}.{parts[1]}"
     else:
-        return f"{value:,.2f}"
+        return f"{int(value):,}"
 
 
 def format_supply(value: Optional[float]) -> str:
-    """供給量を読みやすい形式でフォーマット"""
+    """供給量を正確にフォーマット（切り捨てなし）"""
     if value is None:
         return "N/A"
     
-    if value >= 1_000_000_000:
-        return f"{value / 1_000_000_000:.2f}B"
-    elif value >= 1_000_000:
-        return f"{value / 1_000_000:.2f}M"
-    elif value >= 1_000:
-        return f"{value / 1_000:.2f}K"
+    # 整数の場合は整数として表示
+    if value == int(value):
+        return f"{int(value):,}"
+    
+    # 小数点以下を適切に表示（不要な末尾の0は削除）
+    value_str = f"{value:.18f}".rstrip('0').rstrip('.')
+    # カンマ区切りを追加
+    if '.' in value_str:
+        integer_part, decimal_part = value_str.split('.')
+        return f"{int(integer_part):,}.{decimal_part}"
     else:
-        return f"{value:,.2f}"
+        return f"{int(value_str):,}"
 
 
 def show_price(coin_name: str):
