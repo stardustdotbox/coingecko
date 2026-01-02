@@ -86,23 +86,23 @@ python coingecko.py 100JPY USDC
 
 ```
 ┌──(venv)(stardust✨stardust)-[~/coingecko]
-└─$ python coingecko.py BTC
-=== Bitcoin (BTC) Price Data ===
-89,037.00USD
-13,965,707.00JPY
+└─$ python coingecko.py loot
+=== Lootcoin (LOOT) Price Data ===
+0.015954USD
+2.5JPY
 
-=== Bitcoin (BTC) Market Data ===
-Market Cap (USD): $1.78T
-Market Cap (JPY): ¥278.91T
-Fully Diluted Valuation (USD): $1.78T
-Fully Diluted Valuation (JPY): ¥278.91T
-24 Hour Trading Vol (USD): $25.77B
-24 Hour Trading Vol (JPY): ¥4.04T
+=== Lootcoin (LOOT) Market Data ===
+Market Cap (USD): $27,191.14
+Market Cap (JPY): ¥4,266,585.88
+Fully Diluted Valuation (USD): $27,256
+Fully Diluted Valuation (JPY): ¥4,276,828
+24 Hour Trading Vol (USD): $3,019.55
+24 Hour Trading Vol (JPY): ¥473,660.4
 
-=== Bitcoin (BTC) Supply ===
-Circulating Supply: 19.97M BTC
-Total Supply: 19.97M BTC
-Max Supply: 21.00M BTC
+=== Lootcoin (LOOT) Supply ===
+Circulating Supply: 1,722,385.39 LOOT
+Total Supply: 1,726,519.9 LOOT
+Max Supply: 21,000,000 LOOT
 ```
 
  * 通貨換算
