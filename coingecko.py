@@ -43,7 +43,7 @@ def get_coin_id(coin_name: str) -> Optional[str]:
 
 
 def get_price(coin_id: str) -> Tuple[Optional[float], Optional[float]]:
-    """指定した暗号通貨のUSDCとJPY価格を取得"""
+    """指定した暗号通貨のUSDとJPY価格を取得"""
     url = f"https://api.coingecko.com/api/v3/simple/price"
     params = {
         'ids': coin_id,
