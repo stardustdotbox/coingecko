@@ -81,3 +81,35 @@ python coingecko.py 100JPY USDC
   python coingecko.py 100JPY ETH
   python coingecko.py 100JPY USDC
 ```
+
+ * 通貨情報の表示
+
+```
+┌──(venv)(stardust✨stardust)-[~/coingecko]
+└─$ python coingecko.py BTC
+=== Bitcoin (BTC) Price Data ===
+89,037.00USD
+13,965,707.00JPY
+
+=== Bitcoin (BTC) Market Data ===
+Market Cap (USD): $1.78T
+Market Cap (JPY): ¥278.91T
+Fully Diluted Valuation (USD): $1.78T
+Fully Diluted Valuation (JPY): ¥278.91T
+24 Hour Trading Vol (USD): $25.77B
+24 Hour Trading Vol (JPY): ¥4.04T
+
+=== Bitcoin (BTC) Supply ===
+Circulating Supply: 19.97M BTC
+Total Supply: 19.97M BTC
+Max Supply: 21.00M BTC
+```
+
+ * 通貨換算
+
+```
+┌──(venv)(stardust✨stardust)-[~/coingecko]
+└─$ python coingecko.py 1BTC JPYC
+11501403.11JPYC
+```
+

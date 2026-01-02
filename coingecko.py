@@ -70,6 +70,79 @@ def get_price(coin_id: str) -> Tuple[Optional[float], Optional[float]]:
         return None, None
 
 
+def get_market_data(coin_id: str) -> Optional[dict]:
+    """指定した暗号通貨の市場データを取得"""
+    url = f"https://api.coingecko.com/api/v3/simple/price"
+    params = {
+        'ids': coin_id,
+        'vs_currencies': 'usd,jpy',
+        'include_market_cap': 'true',
+        'include_24hr_vol': 'true',
+        'include_24hr_change': 'true',
+        'include_last_updated_at': 'true'
+    }
+    
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        if coin_id not in data:
+            return None
+        
+        coin_data = data[coin_id]
+        
+        # 追加の市場データを取得
+        url_detail = f"https://api.coingecko.com/api/v3/coins/{coin_id}"
+        params_detail = {
+            'localization': 'false',
+            'tickers': 'false',
+            'market_data': 'true',
+            'community_data': 'false',
+            'developer_data': 'false',
+            'sparkline': 'false'
+        }
+        
+        try:
+            response_detail = requests.get(url_detail, params=params_detail, timeout=10)
+            response_detail.raise_for_status()
+            detail_data = response_detail.json()
+            market_data = detail_data.get('market_data', {})
+            
+            return {
+                'name': detail_data.get('name', ''),
+                'symbol': detail_data.get('symbol', '').upper(),
+                'usd_price': coin_data.get('usd'),
+                'jpy_price': coin_data.get('jpy'),
+                'market_cap_usd': coin_data.get('usd_market_cap'),
+                'market_cap_jpy': coin_data.get('jpy_market_cap'),
+                'fully_diluted_valuation_usd': market_data.get('fully_diluted_valuation', {}).get('usd'),
+                'fully_diluted_valuation_jpy': market_data.get('fully_diluted_valuation', {}).get('jpy'),
+                'total_volume_24h_usd': coin_data.get('usd_24h_vol'),
+                'total_volume_24h_jpy': coin_data.get('jpy_24h_vol'),
+                'circulating_supply': market_data.get('circulating_supply'),
+                'total_supply': market_data.get('total_supply'),
+                'max_supply': market_data.get('max_supply'),
+            }
+        except requests.exceptions.RequestException:
+            # 詳細APIが失敗した場合、基本データのみ返す
+            return {
+                'name': '',
+                'symbol': coin_id.upper(),
+                'usd_price': coin_data.get('usd'),
+                'jpy_price': coin_data.get('jpy'),
+                'market_cap_usd': coin_data.get('usd_market_cap'),
+                'market_cap_jpy': coin_data.get('jpy_market_cap'),
+                'total_volume_24h_usd': coin_data.get('usd_24h_vol'),
+                'total_volume_24h_jpy': coin_data.get('jpy_24h_vol'),
+            }
+    except requests.exceptions.RequestException as e:
+        print(f"エラー: APIリクエストに失敗しました - {e}", file=sys.stderr)
+        return None
+    except KeyError:
+        return None
+
+
 def format_price(price: float, currency: str) -> str:
     """価格を適切なフォーマットで表示"""
     if currency == 'USDC':
@@ -108,22 +181,101 @@ def parse_amount_and_currency(arg: str) -> Tuple[Optional[float], Optional[str]]
     return None, None
 
 
+def format_large_number(value: Optional[float]) -> str:
+    """大きな数値を読みやすい形式でフォーマット"""
+    if value is None:
+        return "N/A"
+    
+    if value >= 1_000_000_000_000:
+        return f"{value / 1_000_000_000_000:.2f}T"
+    elif value >= 1_000_000_000:
+        return f"{value / 1_000_000_000:.2f}B"
+    elif value >= 1_000_000:
+        return f"{value / 1_000_000:.2f}M"
+    elif value >= 1_000:
+        return f"{value / 1_000:.2f}K"
+    else:
+        return f"{value:,.2f}"
+
+
+def format_supply(value: Optional[float]) -> str:
+    """供給量を読みやすい形式でフォーマット"""
+    if value is None:
+        return "N/A"
+    
+    if value >= 1_000_000_000:
+        return f"{value / 1_000_000_000:.2f}B"
+    elif value >= 1_000_000:
+        return f"{value / 1_000_000:.2f}M"
+    elif value >= 1_000:
+        return f"{value / 1_000:.2f}K"
+    else:
+        return f"{value:,.2f}"
+
+
 def show_price(coin_name: str):
-    """暗号通貨の価格を表示"""
+    """暗号通貨の価格と市場データを表示"""
     coin_id = get_coin_id(coin_name)
     if not coin_id:
         print(f"エラー: '{coin_name}' はサポートされていない暗号通貨です", file=sys.stderr)
         sys.exit(1)
     
-    usd_price, jpy_price = get_price(coin_id)
+    # 市場データを取得
+    market_data = get_market_data(coin_id)
     
-    if usd_price is None or jpy_price is None:
+    if market_data is None or market_data.get('usd_price') is None or market_data.get('jpy_price') is None:
         print(f"エラー: '{coin_name}' の価格情報を取得できませんでした", file=sys.stderr)
         sys.exit(1)
     
-    # USDC価格として表示（USDCはUSDとほぼ同じ価値）
-    print(format_price(usd_price, 'USDC'))
-    print(format_price(jpy_price, 'JPY'))
+    # APIから取得した通貨名とシンボルを使用
+    display_name = market_data.get('name', '')
+    display_symbol = market_data.get('symbol', coin_name.upper())
+    
+    # 通貨名と価格表示
+    if display_name:
+        print(f"=== {display_name} ({display_symbol}) Price Data ===")
+    else:
+        print(f"=== {display_symbol} Price Data ===")
+    print(format_price(market_data['usd_price'], 'USD'))
+    print(format_price(market_data['jpy_price'], 'JPY'))
+    
+    # 市場データ表示
+    print()
+    if display_name:
+        print(f"=== {display_name} ({display_symbol}) Market Data ===")
+    else:
+        print(f"=== {display_symbol} Market Data ===")
+    
+    # Market Cap
+    if market_data.get('market_cap_usd'):
+        print(f"Market Cap (USD): ${format_large_number(market_data['market_cap_usd'])}")
+    if market_data.get('market_cap_jpy'):
+        print(f"Market Cap (JPY): ¥{format_large_number(market_data['market_cap_jpy'])}")
+    
+    # Fully Diluted Valuation
+    if market_data.get('fully_diluted_valuation_usd'):
+        print(f"Fully Diluted Valuation (USD): ${format_large_number(market_data['fully_diluted_valuation_usd'])}")
+    if market_data.get('fully_diluted_valuation_jpy'):
+        print(f"Fully Diluted Valuation (JPY): ¥{format_large_number(market_data['fully_diluted_valuation_jpy'])}")
+    
+    # 24 Hour Trading Volume
+    if market_data.get('total_volume_24h_usd'):
+        print(f"24 Hour Trading Vol (USD): ${format_large_number(market_data['total_volume_24h_usd'])}")
+    if market_data.get('total_volume_24h_jpy'):
+        print(f"24 Hour Trading Vol (JPY): ¥{format_large_number(market_data['total_volume_24h_jpy'])}")
+    
+    # Supply
+    print()
+    if display_name:
+        print(f"=== {display_name} ({display_symbol}) Supply ===")
+    else:
+        print(f"=== {display_symbol} Supply ===")
+    if market_data.get('circulating_supply') is not None:
+        print(f"Circulating Supply: {format_supply(market_data['circulating_supply'])} {display_symbol}")
+    if market_data.get('total_supply') is not None:
+        print(f"Total Supply: {format_supply(market_data['total_supply'])} {display_symbol}")
+    if market_data.get('max_supply') is not None:
+        print(f"Max Supply: {format_supply(market_data['max_supply'])} {display_symbol}")
 
 
 def convert_currency(amount: float, from_currency: str, to_coin: str):
